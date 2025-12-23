@@ -1,84 +1,262 @@
-<!--
-Get your module up and running quickly.
+# MSSQL Module for Nuxt
 
-Find and replace all on all files (CMD+SHIFT+F):
-- Name: My Module
-- Package name: my-module
-- Description: My new Nuxt module
--->
-
-# My Module
-
-[![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![License][license-src]][license-href]
-[![Nuxt][nuxt-src]][nuxt-href]
-
-My new Nuxt module for doing amazing things.
-
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+A Nuxt module for seamless integration with Microsoft SQL Server databases. This module provides automatic connection pooling, runtime configuration support, and easy-to-use server utilities for working with MSSQL databases in your Nuxt applications.
 
 ## Features
 
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
+- 🔌 **Automatic Connection Pooling** - Manages a global connection pool initialized on server startup
+- ⚙️ **Runtime Configuration** - Uses Nuxt's `runtimeConfig` for secure environment variable management
+- 🚀 **Server Auto-imports** - Database utilities are automatically available in your server routes
+- 🔒 **Type-safe** - Full TypeScript support with proper type definitions
+- 🔄 **Auto-reconnection** - Handles connection lifecycle with proper cleanup on shutdown
+- 📦 **Zero Configuration** - Works out of the box with sensible defaults
 
 ## Quick Setup
 
-Install the module to your Nuxt application with one command:
+1. Install the module:
 
 ```bash
-npx nuxi module add my-module
+npm install mssql-module mssql
+# or
+pnpm add mssql-module mssql
+# or
+yarn add mssql-module mssql
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+2. Add `mssql-module` to the `modules` section of `nuxt.config.ts`:
 
+```typescript
+export default defineNuxtConfig({
+  modules: ['mssql-module']
+})
+```
 
-## Contribution
+3. Configure your environment variables in `.env`:
 
-<details>
-  <summary>Local development</summary>
+```env
+NUXT_MSSQL_USER=your_username
+NUXT_MSSQL_PASSWORD=your_password
+NUXT_MSSQL_SERVER=localhost
+NUXT_MSSQL_DATABASE=your_database
+NUXT_MSSQL_PORT=1433
+NUXT_MSSQL_ENCRYPT=true
+NUXT_MSSQL_TRUST_CERTIFICATE=false
+```
+
+That's it! The module will automatically initialize the connection pool when your Nuxt server starts.
+
+## Usage
+
+### In Server Routes
+
+Use the auto-imported `getMssqlPool()` function in your server routes:
+
+```typescript
+// server/api/users.get.ts
+export default defineEventHandler(async () => {
+  const pool = getMssqlPool()
   
-  ```bash
-  # Install dependencies
-  npm install
+  const result = await pool.request()
+    .query('SELECT * FROM users')
   
-  # Generate type stubs
-  npm run dev:prepare
+  return result.recordset
+})
+```
+
+### With SQL Parameters
+
+```typescript
+// server/api/user/[id].get.ts
+export default defineEventHandler(async (event) => {
+  const pool = getMssqlPool()
+  const id = getRouterParam(event, 'id')
   
-  # Develop with the playground
-  npm run dev
+  const result = await pool.request()
+    .input('id', id)
+    .query(/* sql */ `
+      SELECT * FROM users 
+      WHERE id = @id
+    `)
   
-  # Build the playground
-  npm run dev:build
+  return result.recordset[0]
+})
+```
+
+### Execute Complex Queries
+
+```typescript
+// server/api/orders.post.ts
+export default defineEventHandler(async (event) => {
+  const pool = getMssqlPool()
+  const body = await readBody(event)
   
-  # Run ESLint
-  npm run lint
+  const result = await pool.request()
+    .input('userId', body.userId)
+    .input('total', body.total)
+    .query(/* sql */ `
+      INSERT INTO orders (user_id, total, created_at)
+      VALUES (@userId, @total, GETDATE())
+      SELECT SCOPE_IDENTITY() AS orderId
+    `)
   
-  # Run Vitest
-  npm run test
-  npm run test:watch
+  return { orderId: result.recordset[0].orderId }
+})
+```
+
+## Configuration
+
+### Runtime Config
+
+The module automatically sets up runtime configuration. You can also define it explicitly in `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['mssql-module'],
+  runtimeConfig: {
+    mssql: {
+      user: process.env.NUXT_MSSQL_USER,
+      password: process.env.NUXT_MSSQL_PASSWORD,
+      server: process.env.NUXT_MSSQL_SERVER || 'localhost',
+      database: process.env.NUXT_MSSQL_DATABASE,
+      port: parseInt(process.env.NUXT_MSSQL_PORT || '1433'),
+      encrypt: process.env.NUXT_MSSQL_ENCRYPT === 'true',
+      trustServerCertificate: process.env.NUXT_MSSQL_TRUST_CERTIFICATE === 'true'
+    }
+  }
+})
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NUXT_MSSQL_USER` | Database username | - |
+| `NUXT_MSSQL_PASSWORD` | Database password | - |
+| `NUXT_MSSQL_SERVER` | Database server hostname | `localhost` |
+| `NUXT_MSSQL_DATABASE` | Database name | - |
+| `NUXT_MSSQL_PORT` | Database port | `1433` |
+| `NUXT_MSSQL_ENCRYPT` | Enable encryption | `false` |
+| `NUXT_MSSQL_TRUST_CERTIFICATE` | Trust server certificate | `false` |
+
+## Advanced Usage
+
+### Using Stored Procedures
+
+```typescript
+export default defineEventHandler(async () => {
+  const pool = getMssqlPool()
   
-  # Release new version
-  npm run release
-  ```
+  const result = await pool.request()
+    .input('status', 'active')
+    .execute('sp_GetUsersByStatus')
+  
+  return result.recordset
+})
+```
 
-</details>
+### Transactions
 
+```typescript
+export default defineEventHandler(async (event) => {
+  const pool = getMssqlPool()
+  const transaction = pool.transaction()
+  
+  try {
+    await transaction.begin()
+    
+    await transaction.request()
+      .input('userId', 1)
+      .query('UPDATE accounts SET balance = balance - 100 WHERE user_id = @userId')
+    
+    await transaction.request()
+      .input('userId', 2)
+      .query('UPDATE accounts SET balance = balance + 100 WHERE user_id = @userId')
+    
+    await transaction.commit()
+    return { success: true }
+  } catch (error) {
+    await transaction.rollback()
+    throw error
+  }
+})
+```
 
-<!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/my-module/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/my-module
+## API Reference
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npm.chart.dev/my-module
+### `getMssqlPool()`
 
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/my-module
+Returns the initialized MSSQL connection pool.
 
-[nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt
-[nuxt-href]: https://nuxt.com
+**Returns:** `mssql.ConnectionPool`
+
+**Throws:** Error if the pool hasn't been initialized (plugin hasn't run)
+
+```typescript
+const pool = getMssqlPool()
+```
+
+### `initMssqlPool(config)`
+
+Manually initialize the connection pool (usually handled automatically by the plugin).
+
+**Parameters:**
+- `config`: Object with MSSQL configuration
+
+**Returns:** `Promise<mssql.ConnectionPool>`
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Generate type stubs
+pnpm run dev:prepare
+
+# Develop with the playground
+pnpm run dev
+
+# Build the module
+pnpm run prepack
+
+# Run tests
+pnpm test
+
+# Run lint
+pnpm run lint
+```
+
+## Troubleshooting
+
+### Connection not initialized error
+
+Make sure:
+1. The module is properly registered in `nuxt.config.ts`
+2. Environment variables are correctly set
+3. The server has started (the plugin runs on server startup)
+
+### TypeScript errors with `nitro/runtime`
+
+Install Nitro types:
+
+```bash
+npm install -D nitro
+```
+
+And ensure your `tsconfig.json` includes:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["nitro/types"]
+  }
+}
+```
+
+## License
+
+MIT License
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
