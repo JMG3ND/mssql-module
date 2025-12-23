@@ -1,29 +1,29 @@
-# MSSQL Module for Nuxt
+# Módulo MSSQL para Nuxt
 
-A Nuxt module for seamless integration with Microsoft SQL Server databases. This module provides automatic connection pooling, runtime configuration support, and easy-to-use server utilities for working with MSSQL databases in your Nuxt applications.
+Un módulo de Nuxt para integración perfecta con bases de datos Microsoft SQL Server. Este módulo proporciona pooling automático de conexiones, soporte de configuración en tiempo de ejecución y utilidades de servidor fáciles de usar para trabajar con bases de datos MSSQL en tus aplicaciones Nuxt.
 
-## Features
+## Características
 
-- 🔌 **Automatic Connection Pooling** - Manages a global connection pool initialized on server startup
-- ⚙️ **Runtime Configuration** - Uses Nuxt's `runtimeConfig` for secure environment variable management
-- 🚀 **Server Auto-imports** - Database utilities are automatically available in your server routes
-- 🔒 **Type-safe** - Full TypeScript support with proper type definitions
-- 🔄 **Auto-reconnection** - Handles connection lifecycle with proper cleanup on shutdown
-- 📦 **Zero Configuration** - Works out of the box with sensible defaults
+- 🔌 **Pooling Automático de Conexiones** - Administra un pool global de conexiones inicializado al arrancar el servidor
+- ⚙️ **Configuración en Tiempo de Ejecución** - Usa el `runtimeConfig` de Nuxt para gestión segura de variables de entorno
+- 🚀 **Auto-importaciones de Servidor** - Las utilidades de base de datos están disponibles automáticamente en tus rutas de servidor
+- 🔒 **Tipado Seguro** - Soporte completo de TypeScript con definiciones de tipos adecuadas
+- 🔄 **Auto-reconexión** - Gestiona el ciclo de vida de la conexión con limpieza apropiada al apagar
+- 📦 **Configuración Cero** - Funciona de forma inmediata con valores predeterminados sensibles
 
-## Quick Setup
+## Configuración Rápida
 
-1. Install the module:
+1. Instala el módulo:
 
 ```bash
 npm install mssql-module mssql
-# or
+# o
 pnpm add mssql-module mssql
-# or
+# o
 yarn add mssql-module mssql
 ```
 
-2. Add `mssql-module` to the `modules` section of `nuxt.config.ts`:
+2. Agrega `mssql-module` a la sección `modules` de `nuxt.config.ts`:
 
 ```typescript
 export default defineNuxtConfig({
@@ -31,25 +31,25 @@ export default defineNuxtConfig({
 })
 ```
 
-3. Configure your environment variables in `.env`:
+3. Configura tus variables de entorno en `.env`:
 
 ```env
-NUXT_MSSQL_USER=your_username
-NUXT_MSSQL_PASSWORD=your_password
+NUXT_MSSQL_USER=tu_usuario
+NUXT_MSSQL_PASSWORD=tu_contraseña
 NUXT_MSSQL_SERVER=localhost
-NUXT_MSSQL_DATABASE=your_database
+NUXT_MSSQL_DATABASE=tu_base_de_datos
 NUXT_MSSQL_PORT=1433
 NUXT_MSSQL_ENCRYPT=true
 NUXT_MSSQL_TRUST_CERTIFICATE=false
 ```
 
-That's it! The module will automatically initialize the connection pool when your Nuxt server starts.
+¡Eso es todo! El módulo inicializará automáticamente el pool de conexiones cuando tu servidor Nuxt se inicie.
 
-## Usage
+## Uso
 
-### In Server Routes
+### En Rutas de Servidor
 
-Use the auto-imported `getMssqlPool()` function in your server routes:
+Usa la función auto-importada `getMssqlPool()` en tus rutas de servidor:
 
 ```typescript
 // server/api/users.get.ts
@@ -63,7 +63,7 @@ export default defineEventHandler(async () => {
 })
 ```
 
-### With SQL Parameters
+### Con Parámetros SQL
 
 ```typescript
 // server/api/user/[id].get.ts
@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
-### Execute Complex Queries
+### Ejecutar Consultas Complejas
 
 ```typescript
 // server/api/orders.post.ts
@@ -103,11 +103,11 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
-## Configuration
+## Configuración
 
 ### Runtime Config
 
-The module automatically sets up runtime configuration. You can also define it explicitly in `nuxt.config.ts`:
+El módulo configura automáticamente la configuración en tiempo de ejecución. También puedes definirla explícitamente en `nuxt.config.ts`:
 
 ```typescript
 export default defineNuxtConfig({
@@ -126,21 +126,21 @@ export default defineNuxtConfig({
 })
 ```
 
-### Environment Variables
+### Variables de Entorno
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NUXT_MSSQL_USER` | Database username | - |
-| `NUXT_MSSQL_PASSWORD` | Database password | - |
-| `NUXT_MSSQL_SERVER` | Database server hostname | `localhost` |
-| `NUXT_MSSQL_DATABASE` | Database name | - |
-| `NUXT_MSSQL_PORT` | Database port | `1433` |
-| `NUXT_MSSQL_ENCRYPT` | Enable encryption | `false` |
-| `NUXT_MSSQL_TRUST_CERTIFICATE` | Trust server certificate | `false` |
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `NUXT_MSSQL_USER` | Nombre de usuario de la base de datos | - |
+| `NUXT_MSSQL_PASSWORD` | Contraseña de la base de datos | - |
+| `NUXT_MSSQL_SERVER` | Nombre del servidor de la base de datos | `localhost` |
+| `NUXT_MSSQL_DATABASE` | Nombre de la base de datos | - |
+| `NUXT_MSSQL_PORT` | Puerto de la base de datos | `1433` |
+| `NUXT_MSSQL_ENCRYPT` | Habilitar encriptación | `false` |
+| `NUXT_MSSQL_TRUST_CERTIFICATE` | Confiar en el certificado del servidor | `false` |
 
-## Advanced Usage
+## Uso Avanzado
 
-### Using Stored Procedures
+### Usando Procedimientos Almacenados
 
 ```typescript
 export default defineEventHandler(async () => {
@@ -154,7 +154,7 @@ export default defineEventHandler(async () => {
 })
 ```
 
-### Transactions
+### Transacciones
 
 ```typescript
 export default defineEventHandler(async (event) => {
@@ -181,15 +181,15 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
-## API Reference
+## Referencia de API
 
 ### `getMssqlPool()`
 
-Returns the initialized MSSQL connection pool.
+Devuelve el pool de conexiones MSSQL inicializado.
 
-**Returns:** `mssql.ConnectionPool`
+**Devuelve:** `mssql.ConnectionPool`
 
-**Throws:** Error if the pool hasn't been initialized (plugin hasn't run)
+**Lanza:** Error si el pool no ha sido inicializado (el plugin no se ha ejecutado)
 
 ```typescript
 const pool = getMssqlPool()
@@ -197,53 +197,53 @@ const pool = getMssqlPool()
 
 ### `initMssqlPool(config)`
 
-Manually initialize the connection pool (usually handled automatically by the plugin).
+Inicializa manualmente el pool de conexiones (generalmente manejado automáticamente por el plugin).
 
-**Parameters:**
-- `config`: Object with MSSQL configuration
+**Parámetros:**
+- `config`: Objeto con configuración de MSSQL
 
-**Returns:** `Promise<mssql.ConnectionPool>`
+**Devuelve:** `Promise<mssql.ConnectionPool>`
 
-## Development
+## Desarrollo
 
 ```bash
-# Install dependencies
+# Instalar dependencias
 pnpm install
 
-# Generate type stubs
+# Generar stubs de tipos
 pnpm run dev:prepare
 
-# Develop with the playground
+# Desarrollar con el playground
 pnpm run dev
 
-# Build the module
+# Construir el módulo
 pnpm run prepack
 
-# Run tests
+# Ejecutar pruebas
 pnpm test
 
-# Run lint
+# Ejecutar lint
 pnpm run lint
 ```
 
-## Troubleshooting
+## Solución de Problemas
 
-### Connection not initialized error
+### Error de conexión no inicializada
 
-Make sure:
-1. The module is properly registered in `nuxt.config.ts`
-2. Environment variables are correctly set
-3. The server has started (the plugin runs on server startup)
+Asegúrate de que:
+1. El módulo está registrado correctamente en `nuxt.config.ts`
+2. Las variables de entorno están configuradas correctamente
+3. El servidor ha iniciado (el plugin se ejecuta al arrancar el servidor)
 
-### TypeScript errors with `nitro/runtime`
+### Errores de TypeScript con `nitro/runtime`
 
-Install Nitro types:
+Instala los tipos de Nitro:
 
 ```bash
 npm install -D nitro
 ```
 
-And ensure your `tsconfig.json` includes:
+Y asegúrate de que tu `tsconfig.json` incluye:
 
 ```json
 {
@@ -253,10 +253,10 @@ And ensure your `tsconfig.json` includes:
 }
 ```
 
-## License
+## Licencia
 
 MIT License
 
-## Contributing
+## Contribuciones
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+¡Las contribuciones son bienvenidas! Por favor, no dudes en enviar un Pull Request.
