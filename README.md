@@ -16,11 +16,15 @@ Un módulo de Nuxt para integración perfecta con bases de datos Microsoft SQL S
 1. Instala el módulo:
 
 ```bash
+# Desde GitHub
+npm install github:montain/mssql-module mssql
+# o
+pnpm add github:montain/mssql-module mssql
+# o
+yarn add github:montain/mssql-module mssql
+
+# O desde npm (cuando se publique)
 npm install mssql-module mssql
-# o
-pnpm add mssql-module mssql
-# o
-yarn add mssql-module mssql
 ```
 
 2. Agrega `mssql-module` a la sección `modules` de `nuxt.config.ts`:
@@ -49,17 +53,13 @@ NUXT_MSSQL_TRUST_CERTIFICATE=false
 
 ### En Rutas de Servidor
 
-Usa la función auto-importada `getMssqlPool()` en tus rutas de servidor:
+Usa la función auto-importada `executeSql()` en tus rutas de servidor:
 
 ```typescript
 // server/api/users.get.ts
 export default defineEventHandler(async () => {
-  const pool = getMssqlPool()
-  
-  const result = await pool.request()
-    .query('SELECT * FROM users')
-  
-  return result.recordset
+  const users = await executeSql('SELECT * FROM users')
+  return users
 })
 ```
 
@@ -68,17 +68,14 @@ export default defineEventHandler(async () => {
 ```typescript
 // server/api/user/[id].get.ts
 export default defineEventHandler(async (event) => {
-  const pool = getMssqlPool()
   const id = getRouterParam(event, 'id')
   
-  const result = await pool.request()
-    .input('id', id)
-    .query(/* sql */ `
-      SELECT * FROM users 
-      WHERE id = @id
-    `)
+  const users = await executeSql<{ id: number, name: string }[]>(
+    /* sql */ `SELECT * FROM users WHERE id = @id`,
+    { id }
+  )
   
-  return result.recordset[0]
+  return users[0]
 })
 ```
 
@@ -87,19 +84,18 @@ export default defineEventHandler(async (event) => {
 ```typescript
 // server/api/orders.post.ts
 export default defineEventHandler(async (event) => {
-  const pool = getMssqlPool()
   const body = await readBody(event)
   
-  const result = await pool.request()
-    .input('userId', body.userId)
-    .input('total', body.total)
-    .query(/* sql */ `
+  const result = await executeSql<{ orderId: number }[]>(
+    /* sql */ `
       INSERT INTO orders (user_id, total, created_at)
       VALUES (@userId, @total, GETDATE())
       SELECT SCOPE_IDENTITY() AS orderId
-    `)
+    `,
+    { userId: body.userId, total: body.total }
+  )
   
-  return { orderId: result.recordset[0].orderId }
+  return { orderId: result[0].orderId }
 })
 ```
 
@@ -142,6 +138,8 @@ export default defineNuxtConfig({
 
 ### Usando Procedimientos Almacenados
 
+Para procedimientos almacenados, necesitas usar `getMssqlPool()` directamente:
+
 ```typescript
 export default defineEventHandler(async () => {
   const pool = getMssqlPool()
@@ -155,6 +153,8 @@ export default defineEventHandler(async () => {
 ```
 
 ### Transacciones
+
+Para transacciones, necesitas usar `getMssqlPool()` directamente:
 
 ```typescript
 export default defineEventHandler(async (event) => {
@@ -183,9 +183,26 @@ export default defineEventHandler(async (event) => {
 
 ## Referencia de API
 
+### `executeSql<T>(query, params?)`
+
+Ejecuta una consulta SQL con parámetros opcionales.
+
+**Parámetros:**
+- `query`: String con la consulta SQL
+- `params`: (Opcional) Objeto con parámetros para la consulta
+
+**Devuelve:** `Promise<T>` - Resultado de la consulta
+
+```typescript
+const users = await executeSql<User[]>(
+  'SELECT * FROM users WHERE status = @status',
+  { status: 'active' }
+)
+```
+
 ### `getMssqlPool()`
 
-Devuelve el pool de conexiones MSSQL inicializado.
+Devuelve el pool de conexiones MSSQL inicializado. Úsalo solo para casos avanzados como procedimientos almacenados o transacciones.
 
 **Devuelve:** `mssql.ConnectionPool`
 
