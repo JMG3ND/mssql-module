@@ -1,20 +1,24 @@
 import { describe, it, expect, beforeAll } from 'vitest'
+import { initMssqlPool } from '../src/runtime/config'
 import { executeSql } from '../src/runtime/core/executeSql'
 
 describe('MSSQL Connection', () => {
   beforeAll(async () => {
-    // Configurar variables de entorno para pruebas
-    process.env.MSSQL_USER = 'Jose'
-    process.env.MSSQL_PASSWORD = 'Jose*03052404'
-    process.env.MSSQL_SERVER = 'SM1-NOA-1'
-    process.env.MSSQL_DATABASE = 'SIMBASQL'
-    process.env.MSSQL_PORT = '1433'
-    process.env.MSSQL_ENCRYPT = 'false'
-    process.env.MSSQL_TRUST_SERVER_CERTIFICATE = 'true'
+    await initMssqlPool({
+      user: process.env.MSSQL_USER || '',
+      password: process.env.MSSQL_PASSWORD || '',
+      server: process.env.MSSQL_SERVER || '',
+      database: process.env.MSSQL_DATABASE || '',
+      port: Number(process.env.MSSQL_PORT),
+      encrypt: process.env.MSSQL_ENCRYPT === 'true',
+      trustServerCertificate: process.env.MSSQL_TRUST_CERTIFICATE === 'true',
+    })
   })
 
   it('debería conectarse a la base de datos', async () => {
-    const result = await executeSql<Array<{ number: number }>>('SELECT 1 AS number')
+    const result = await executeSql<Array<{ number: number }>>(/* sql */`
+      SELECT 1 AS number
+    `)
 
     expect(result).toBeDefined()
     expect(result.length).toBeGreaterThan(0)
@@ -22,10 +26,9 @@ describe('MSSQL Connection', () => {
   })
 
   it('debería ejecutar consultas con parámetros', async () => {
-    const result = await executeSql<Array<{ value: number }>>(
-      'SELECT @value AS value',
-      { value: 42 },
-    )
+    const result = await executeSql<Array<{ value: number }>>(/* sql */`
+      SELECT @value AS value
+    `, { value: 42 })
 
     expect(result[0]?.value).toBe(42)
   })
