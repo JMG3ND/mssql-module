@@ -4,34 +4,9 @@ declare global {
   var mssqlPool: mssql.ConnectionPool | undefined
 }
 
-interface MssqlConfig {
-  user: string
-  password: string
-  server: string
-  database: string
-  port: number
-  encrypt: boolean
-  trustServerCertificate: boolean
-}
-
-const toMssqlConfig = (config: MssqlConfig): mssql.config => {
-  return {
-    user: config.user,
-    password: config.password,
-    server: config.server,
-    database: config.database,
-    port: config.port,
-    options: {
-      encrypt: config.encrypt,
-      trustServerCertificate: config.trustServerCertificate,
-    },
-  }
-}
-
-const initMssqlPool = async (config: MssqlConfig): Promise<mssql.ConnectionPool> => {
+const initMssqlPool = async (config: mssql.config): Promise<mssql.ConnectionPool> => {
   if (!globalThis.mssqlPool) {
-    const mssqlConfig = toMssqlConfig(config)
-    globalThis.mssqlPool = await new mssql.ConnectionPool(mssqlConfig).connect()
+    globalThis.mssqlPool = await new mssql.ConnectionPool({ ...config }).connect()
   }
   return globalThis.mssqlPool
 }

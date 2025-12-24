@@ -1,4 +1,4 @@
-import { defineNitroPlugin, useRuntimeConfig } from 'nitro/runtime'
+import { defineNitroPlugin, useRuntimeConfig } from 'nitropack/runtime'
 import { initMssqlPool } from '../config/mssql'
 import { consola } from 'consola'
 
